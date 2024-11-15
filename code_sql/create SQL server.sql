@@ -1,145 +1,152 @@
 -- Tạo cơ sở dữ liệu
-CREATE DATABASE CSDLNC;
+CREATE DATABASE csdl_nc;
 GO
 
-USE CSDLNC;
+USE csdl_nc;
 GO
 
--- Tạo bảng Region
-CREATE TABLE Region (
-    Id VARCHAR(255) PRIMARY KEY,
-    Name NVARCHAR(100) NOT NULL
+-- Tạo bảng region
+CREATE TABLE region (
+    id VARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(100) UNIQUE NOT NULL  -- Giảm từ 255 xuống 100
 );
 
--- Tạo bảng City
-CREATE TABLE City (
-    Id VARCHAR(255) PRIMARY KEY,
-    Id_region VARCHAR(255) FOREIGN KEY REFERENCES Region(Id),
-    Name NVARCHAR(100) NOT NULL
+-- Tạo bảng city
+CREATE TABLE city (
+    id VARCHAR(255) PRIMARY KEY,
+    region_id VARCHAR(255), 
+    name NVARCHAR(100) NOT NULL,  -- Giảm từ 255 xuống 100
+    FOREIGN KEY (region_id) REFERENCES region(id)
 );
 
--- Tạo bảng District
-CREATE TABLE District (
-    Id VARCHAR(255) PRIMARY KEY,
-    Id_city VARCHAR(255) FOREIGN KEY REFERENCES City(Id),
-    Name NVARCHAR(100) NOT NULL
+-- Tạo bảng district
+CREATE TABLE district (
+    id VARCHAR(255) PRIMARY KEY,
+    city_id VARCHAR(255), 
+    name NVARCHAR(100) NOT NULL,  -- Giảm từ 255 xuống 100
+    FOREIGN KEY (city_id) REFERENCES city(id)
 );
 
--- Tạo bảng Ward
-CREATE TABLE Ward (
-    Id VARCHAR(255) PRIMARY KEY,
-    Id_district VARCHAR(255) FOREIGN KEY REFERENCES District(Id),
-    Name NVARCHAR(100) NOT NULL
+-- Tạo bảng ward
+CREATE TABLE ward (
+    id VARCHAR(255) PRIMARY KEY,
+    district_id VARCHAR(255),
+    name NVARCHAR(100) NOT NULL,  -- Giảm từ 255 xuống 100
+    FOREIGN KEY (district_id) REFERENCES district(id)
 );
 
--- Tạo bảng Address
-CREATE TABLE Address (
-    Id VARCHAR(255) PRIMARY KEY,
-    Street NVARCHAR(255),
-    Id_ward VARCHAR(255) FOREIGN KEY REFERENCES Ward(Id)
+-- Tạo bảng address
+CREATE TABLE address (
+    id VARCHAR(255) PRIMARY KEY,
+    street NVARCHAR(255),  -- Giữ nguyên vì có thể dài
+    ward_id VARCHAR(255),
+    FOREIGN KEY (ward_id) REFERENCES ward(id)
 );
 
--- Tạo bảng Role
-CREATE TABLE Role (
-    Id VARCHAR(255) PRIMARY KEY,
-    Name NVARCHAR(100) NOT NULL
+-- Tạo bảng role
+CREATE TABLE role (
+    id VARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(100) UNIQUE NOT NULL  -- Giảm từ 255 xuống 100
 );
 
--- Tạo bảng User
-CREATE TABLE [User] (
-    Id VARCHAR(255) PRIMARY KEY,
-    Id_address VARCHAR(255) FOREIGN KEY REFERENCES Address(Id),
-    Name NVARCHAR(100) NOT NULL,
-    DOB DATE,
-    UserName NVARCHAR(100) UNIQUE NOT NULL,
-    Password NVARCHAR(255) NOT NULL,
-    Phone_number NVARCHAR(20),
-    Image NVARCHAR(255)
+-- Tạo bảng user
+CREATE TABLE [user] (
+    id VARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    dob DATE,
+    username NVARCHAR(100) UNIQUE NOT NULL,  -- Giảm từ 255 xuống 100
+    password NVARCHAR(255) NOT NULL,
+    phone_number VARCHAR(20),  -- Đúng kích thước cho số điện thoại
+    image NVARCHAR(255),
+    address_id VARCHAR(255) UNIQUE,
+    FOREIGN KEY (address_id) REFERENCES address(id)
 );
 
--- Tạo bảng Customer
-CREATE TABLE Customer (
-    Id VARCHAR(255) PRIMARY KEY,
-    Id_user VARCHAR(255) FOREIGN KEY REFERENCES [User](Id)
+-- Tạo bảng customer
+CREATE TABLE customer (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) FOREIGN KEY REFERENCES [user](id)
 );
 
--- Tạo bảng Employee
-CREATE TABLE Employee (
-    Id_user VARCHAR(255) PRIMARY KEY FOREIGN KEY REFERENCES [User](Id),
-    Id_role VARCHAR(255) FOREIGN KEY REFERENCES Role(Id)
+-- Tạo bảng employee
+CREATE TABLE employee (
+    user_id VARCHAR(255) PRIMARY KEY FOREIGN KEY REFERENCES [user](id),
+    role_id VARCHAR(255) FOREIGN KEY REFERENCES role(id)
 );
 
--- Tạo bảng Category
-CREATE TABLE Category (
-    Id VARCHAR(255) PRIMARY KEY,
-    Name NVARCHAR(100) NOT NULL
+-- Tạo bảng category
+CREATE TABLE category (
+    id VARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL  -- Giảm từ 255 xuống 100
 );
 
--- Tạo bảng Product
-CREATE TABLE Product (
-    Id VARCHAR(255) PRIMARY KEY,
-    Id_category VARCHAR(255) FOREIGN KEY REFERENCES Category(Id),
-    Name NVARCHAR(255) NOT NULL,
-    Description NVARCHAR(1000),
-    Price DECIMAL(18, 2) NOT NULL,
-    Stock INT NOT NULL,
-    Image NVARCHAR(255)
+-- Tạo bảng product
+CREATE TABLE product (
+    id VARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    description NVARCHAR(1000),  -- Giữ nguyên vì mô tả có thể dài
+    price DECIMAL(18, 2) NOT NULL,
+    stock INT NOT NULL,
+    image NVARCHAR(255),
+    category_id VARCHAR(255),
+    FOREIGN KEY (category_id) REFERENCES category(id)
 );
 
--- Tạo bảng Supplier
-CREATE TABLE Supplier (
-    Id VARCHAR(255) PRIMARY KEY,
-    Name NVARCHAR(255) NOT NULL,
-    Id_address VARCHAR(255) FOREIGN KEY REFERENCES Address(Id)
+-- Tạo bảng supplier
+CREATE TABLE supplier (
+    id VARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    address_id VARCHAR(255) UNIQUE,
+    FOREIGN KEY (address_id) REFERENCES address(id)
 );
 
--- Tạo bảng Payment
-CREATE TABLE Payment (
-    Id VARCHAR(255) PRIMARY KEY,
-    Name NVARCHAR(100) NOT NULL,
-    Image NVARCHAR(255)
+-- Tạo bảng payment
+CREATE TABLE payment (
+    id VARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    image NVARCHAR(255)
 );
 
--- Tạo bảng Bill
-CREATE TABLE Bill (
-    Id VARCHAR(255) PRIMARY KEY,
-    Id_payment VARCHAR(255) FOREIGN KEY REFERENCES Payment(Id),
-    Total DECIMAL(18, 2) NOT NULL,
-    Order_date DATE NOT NULL,
-    Status NVARCHAR(100)
+-- Tạo bảng bill
+CREATE TABLE bill (
+    id VARCHAR(255) PRIMARY KEY,
+    payment_id VARCHAR(255) FOREIGN KEY REFERENCES payment(id),
+    total DECIMAL(18, 2) NOT NULL,
+    order_date DATE NOT NULL,
+    status NVARCHAR(100)  -- Giảm từ 255 xuống 100
 );
 
--- Tạo bảng Buy_Product
-CREATE TABLE Buy_Product (
-    Id_Bill VARCHAR(255) FOREIGN KEY REFERENCES Bill(Id),
-    Id_product VARCHAR(255) FOREIGN KEY REFERENCES Product(Id),
-    Id_customer VARCHAR(255) FOREIGN KEY REFERENCES Customer(Id),
-    Quantity INT NOT NULL,
-    PRIMARY KEY(Id_Bill, Id_product, Id_customer)
+-- Tạo bảng buy_product
+CREATE TABLE buy_product (
+    bill_id VARCHAR(255) FOREIGN KEY REFERENCES bill(id),
+    product_id VARCHAR(255) FOREIGN KEY REFERENCES product(id),
+    customer_id VARCHAR(255) FOREIGN KEY REFERENCES customer(id),
+    quantity INT NOT NULL,
+    PRIMARY KEY(bill_id, product_id, customer_id)
 );
 
--- Tạo bảng Cart
-CREATE TABLE Cart (
-    Id_customer VARCHAR(255) FOREIGN KEY REFERENCES Customer(Id),
-    Id_product VARCHAR(255) FOREIGN KEY REFERENCES Product(Id),
-    Quantity INT NOT NULL,
-    PRIMARY KEY(Id_customer, Id_product)
+-- Tạo bảng cart
+CREATE TABLE cart (
+    customer_id VARCHAR(255) FOREIGN KEY REFERENCES customer(id),
+    product_id VARCHAR(255) FOREIGN KEY REFERENCES product(id),
+    quantity INT NOT NULL,
+    PRIMARY KEY(customer_id, product_id)
 );
 
--- Tạo bảng Import_Bill
-CREATE TABLE Import_Bill (
-    Id VARCHAR(255) PRIMARY KEY,
-    Products_name NVARCHAR(255) NOT NULL,
-    Order_date DATE NOT NULL
+-- Tạo bảng import_bill
+CREATE TABLE import_bill (
+    id VARCHAR(255) PRIMARY KEY,
+    products_name NVARCHAR(255) NOT NULL,
+    order_date DATE NOT NULL
 );
 
--- Tạo bảng Import_Product
-CREATE TABLE Import_Product (
-    Id_import_bill VARCHAR(255) FOREIGN KEY REFERENCES Import_Bill(Id),
-    Id_product VARCHAR(255) FOREIGN KEY REFERENCES Product(Id),
-    Id_supplier VARCHAR(255) FOREIGN KEY REFERENCES Supplier(Id),
-    Quantity INT NOT NULL,
-    PRIMARY KEY(Id_import_bill, Id_product, Id_supplier)
+-- Tạo bảng import_product
+CREATE TABLE import_product (
+    import_bill_id VARCHAR(255) FOREIGN KEY REFERENCES import_bill(id),
+    product_id VARCHAR(255) FOREIGN KEY REFERENCES product(id),
+    supplier_id VARCHAR(255) FOREIGN KEY REFERENCES supplier(id),
+    quantity INT NOT NULL,
+    PRIMARY KEY(import_bill_id, product_id, supplier_id)
 );
 
 GO
